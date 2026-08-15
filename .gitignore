@@ -1,0 +1,8 @@
+.env
+data/
+customize/
+onlyoffice-dist/
+onlyoffice-conf/
+*.log
+.DS_Store
+Thumbs.db

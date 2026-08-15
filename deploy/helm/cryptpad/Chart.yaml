@@ -1,0 +1,9 @@
+apiVersion: v2
+name: cryptpad
+description: CryptPad — encrypted diagrams, whiteboard, and live collaboration
+type: application
+version: 0.1.0
+appVersion: "2026.5.1"
+sources:
+  - https://github.com/cryptpad/cryptpad
+  - https://hub.docker.com/r/cryptpad/cryptpad

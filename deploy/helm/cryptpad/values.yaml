@@ -1,0 +1,47 @@
+# CryptPad — diagrams + live collaboration.
+# Secrets are NOT stored here. Pre-create:
+#   kubectl create namespace cryptpad
+#   kubectl -n cryptpad create secret generic cryptpad-secrets \
+#     --from-literal=loginSalt="$(openssl rand -hex 32)"
+#
+# Public hostnames are not applied by Helm. Wire them on tunnel
+# brandonslab-k3s-local (merge, do not replace the full ingress):
+#   draw.brandonslab.work         → http://cryptpad.cryptpad.svc.cluster.local:80
+#   sandbox.draw.brandonslab.work → http://cryptpad.cryptpad.svc.cluster.local:80
+# Access: none / EveryoneBypass. Share links must work for people who
+# are not zonatedace@gmail.com. CryptPad is E2E encrypted.
+
+existingSecret: cryptpad-secrets
+
+image:
+  repository: cryptpad/cryptpad
+  tag: "version-2026.5.1"
+  pullPolicy: IfNotPresent
+
+nginx:
+  image:
+    repository: nginx
+    tag: "1.27-alpine"
+    pullPolicy: IfNotPresent
+
+mainOrigin: "https://draw.brandonslab.work"
+sandboxOrigin: "https://sandbox.draw.brandonslab.work"
+publicHostname: draw.brandonslab.work
+sandboxHostname: sandbox.draw.brandonslab.work
+
+# Official image already listens on 0.0.0.0. Leave OnlyOffice off unless
+# you also want CryptPad's document/spreadsheet/slide apps.
+installOnlyOffice: false
+
+service:
+  type: ClusterIP
+  port: 80
+
+persistence:
+  size: 10Gi
+  storageClassName: longhorn-replicated-r2
+
+nodeSelector: {}
+
+resources: {}
+nginxResources: {}
