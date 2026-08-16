@@ -18,18 +18,26 @@ From this repo root:
 helm upgrade --install cryptpad deploy/helm/cryptpad -n cryptpad
 ```
 
+## Keycloak OIDC
+
+Realm `brandonslab`, client `cryptpad`, issuer `https://auth.brandonslab.work/auth/realms/brandonslab`.
+
+Redirect URI must be exactly `https://draw.brandonslab.work/ssoauth`. Store the client secret in `cryptpad-secrets` key `oidcClientSecret`. The chart clones [cryptpad/sso](https://github.com/cryptpad/sso) at pod start.
+
+Login page shows **Log in with keycloak**. After SSO, CryptPad still asks for a pad password (`forceCpPassword`) because that password derives the encryption key. `sso.enforced` stays false so the first-run `/install/#...` admin URL still works.
+
 ## Cloudflare tunnel
 
-Merge these public hostnames onto `brandonslab-k3s-local`. Do not replace the full ingress list.
+Live on `brandonslab-k3s-local`. Do not replace the full ingress list when editing.
 
 | Host | Origin | Access |
 |---|---|---|
-| `draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` | none / EveryoneBypass |
-| `sandbox.draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` | none / EveryoneBypass |
+| `draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` | none (share links) |
+| `sandbox-draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` | none (share links) |
+
+Use `sandbox-draw` (one DNS label), not `sandbox.draw`. Cloudflare Universal SSL is `*.brandonslab.work` only.
 
 DNS CNAME for both → `95bab145-c27d-4407-a192-93b5627fb3a9.cfargotunnel.com` (proxied).
-
-No Cloudflare Access. Share links have to work for people who are not you. CryptPad encrypts pads.
 
 ## First-run admin
 

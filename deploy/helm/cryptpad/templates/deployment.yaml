@@ -49,6 +49,21 @@ spec:
             - name: data
               mountPath: /customize
               subPath: customize
+        {{- if .Values.sso.enabled }}
+        - name: sso-plugin
+          image: alpine/git:2.47.2
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              git clone --depth 1 --branch {{ .Values.sso.pluginRef | default "main" }} {{ .Values.sso.pluginRepo | quote }} /plugin
+              chown -R 4001:4001 /plugin
+          volumeMounts:
+            - name: sso-plugin
+              mountPath: /plugin
+        {{- end }}
       containers:
         - name: cryptpad
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -64,6 +79,19 @@ spec:
               value: {{ .Values.sandboxOrigin | quote }}
             - name: CPAD_CONF
               value: /cryptpad/config/config.js
+            {{- if .Values.sso.enabled }}
+            - name: SSO_ISSUER_URL
+              value: {{ .Values.sso.issuerUrl | quote }}
+            - name: SSO_CLIENT_ID
+              value: {{ .Values.sso.clientId | quote }}
+            - name: SSO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: oidcClientSecret
+            - name: CRYPTPAD_SSO_CONFIG
+              value: /cryptpad/config/sso
+            {{- end }}
             {{- if .Values.installOnlyOffice }}
             - name: CPAD_INSTALL_ONLYOFFICE
               value: "yes"
@@ -77,6 +105,13 @@ spec:
             - name: config
               mountPath: /cryptpad/config/config.js
               subPath: config.js
+            {{- if .Values.sso.enabled }}
+            - name: config
+              mountPath: /cryptpad/config/sso.js
+              subPath: sso.js
+            - name: sso-plugin
+              mountPath: /cryptpad/lib/plugins/sso
+            {{- end }}
             - name: data
               mountPath: /cryptpad/blob
               subPath: blob
@@ -138,3 +173,7 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: cryptpad-data
+        {{- if .Values.sso.enabled }}
+        - name: sso-plugin
+          emptyDir: {}
+        {{- end }}

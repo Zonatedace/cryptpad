@@ -7,11 +7,26 @@
 # Public hostnames are not applied by Helm. Wire them on tunnel
 # brandonslab-k3s-local (merge, do not replace the full ingress):
 #   draw.brandonslab.work         → http://cryptpad.cryptpad.svc.cluster.local:80
-#   sandbox.draw.brandonslab.work → http://cryptpad.cryptpad.svc.cluster.local:80
+#   sandbox-draw.brandonslab.work → http://cryptpad.cryptpad.svc.cluster.local:80
 # Access: none / EveryoneBypass. Share links must work for people who
-# are not zonatedace@gmail.com. CryptPad is E2E encrypted.
+# are not zonatedace@gmail.com. App login is Keycloak OIDC (CryptPad SSO
+# plugin). Pre-create a Keycloak client `cryptpad` in realm `brandonslab`
+# with redirect https://draw.brandonslab.work/ssoauth, then:
+#   kubectl -n cryptpad create secret generic cryptpad-secrets \
+#     --from-literal=loginSalt="$(openssl rand -hex 32)" \
+#     --from-literal=oidcClientSecret='<from-kcadm>'
 
 existingSecret: cryptpad-secrets
+
+sso:
+  enabled: true
+  # Still allow the first-run /install admin URL. Flip to true later
+  # if you want Keycloak as the only way to register.
+  enforced: false
+  issuerUrl: "https://auth.brandonslab.work/auth/realms/brandonslab"
+  clientId: cryptpad
+  pluginRepo: https://github.com/cryptpad/sso.git
+  pluginRef: main
 
 image:
   repository: cryptpad/cryptpad
@@ -25,9 +40,9 @@ nginx:
     pullPolicy: IfNotPresent
 
 mainOrigin: "https://draw.brandonslab.work"
-sandboxOrigin: "https://sandbox.draw.brandonslab.work"
+sandboxOrigin: "https://sandbox-draw.brandonslab.work"
 publicHostname: draw.brandonslab.work
-sandboxHostname: sandbox.draw.brandonslab.work
+sandboxHostname: sandbox-draw.brandonslab.work
 
 # Official image already listens on 0.0.0.0. Leave OnlyOffice off unless
 # you also want CryptPad's document/spreadsheet/slide apps.

@@ -46,12 +46,12 @@ kubectl -n cryptpad create secret generic cryptpad-secrets \
 helm upgrade --install cryptpad deploy/helm/cryptpad -n cryptpad
 ```
 
-Public hostnames (wire through tunnel `brandonslab-k3s-local`, **no Cloudflare Access** so share links work for other people):
+Public hostnames (tunnel `brandonslab-k3s-local`, **no Cloudflare Access** so share links work). Login is Keycloak OIDC (`cryptpad` client, realm `brandonslab`).
 
 | Host | Service |
 |---|---|
 | `https://draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` |
-| `https://sandbox.draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` |
+| `https://sandbox-draw.brandonslab.work` | `http://cryptpad.cryptpad.svc.cluster.local:80` |
 
 Both names must hit the same service. CryptPad uses the sandbox hostname for XSS isolation; it is not a second app.
 

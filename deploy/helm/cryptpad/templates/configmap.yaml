@@ -29,6 +29,29 @@ data:
         verbose: false,
         installMethod: 'k8s-docker',
     };
+  {{- if .Values.sso.enabled }}
+  sso.js: |
+    module.exports = {
+      enabled: true,
+      enforced: {{ .Values.sso.enforced }},
+      cpPassword: true,
+      forceCpPassword: true,
+      list: [
+        {
+          name: 'keycloak',
+          type: 'oidc',
+          url: process.env.SSO_ISSUER_URL,
+          client_id: process.env.SSO_CLIENT_ID,
+          client_secret: process.env.SSO_CLIENT_SECRET,
+          jwt_alg: 'RS256',
+          username_scope: 'profile',
+          username_claim: 'preferred_username',
+          use_pkce: true,
+          use_nonce: true
+        }
+      ]
+    };
+  {{- end }}
   nginx.conf: |
     map $http_upgrade $connection_upgrade {
         default upgrade;
