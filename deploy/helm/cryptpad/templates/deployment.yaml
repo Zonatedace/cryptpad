@@ -38,7 +38,7 @@ spec:
             - sh
             - -c
             - |
-              printf "AppConfig.loginSalt = '%s';\nAppConfig.minimumPasswordLength = 8;\n" "$LOGIN_SALT" > /customize/application_config.js
+              sed "s/__LOGIN_SALT__/${LOGIN_SALT}/g" /tmpl/application_config.js.tmpl > /customize/application_config.js
           env:
             - name: LOGIN_SALT
               valueFrom:
@@ -49,6 +49,9 @@ spec:
             - name: data
               mountPath: /customize
               subPath: customize
+            - name: config
+              mountPath: /tmpl
+              readOnly: true
         {{- if .Values.sso.enabled }}
         - name: sso-plugin
           image: alpine/git:2.47.2

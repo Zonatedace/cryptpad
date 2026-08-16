@@ -29,6 +29,19 @@ data:
         verbose: false,
         installMethod: 'k8s-docker',
     };
+  application_config.js.tmpl: |
+    (() => {
+    const factory = (AppConfig) => {
+        AppConfig.loginSalt = '__LOGIN_SALT__';
+        AppConfig.minimumPasswordLength = 8;
+        return AppConfig;
+    };
+    if (typeof(module) !== 'undefined' && module.exports) {
+        module.exports = factory(require('../www/common/application_config_internal.js'));
+    } else if ((typeof(define) !== 'undefined' && define !== null) && (define.amd !== null)) {
+        define(['/common/application_config_internal.js'], factory);
+    }
+    })();
   {{- if .Values.sso.enabled }}
   sso.js: |
     module.exports = {
@@ -71,7 +84,7 @@ data:
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Proto https;
             proxy_read_timeout 86400s;
         }
 
@@ -83,7 +96,7 @@ data:
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Proto https;
             proxy_read_timeout 86400s;
         }
     }
